@@ -515,6 +515,11 @@ interface Contact {
   company?: string;
 }
 
+interface ProductRef {
+  id: string;
+  name: string;
+}
+
 interface Interaction {
   id: number;
   type: string;
@@ -525,6 +530,7 @@ interface Interaction {
   duration?: string;
   status: string;
   contact?: Contact;
+  product?: ProductRef;
 }
 
 export default function InteractionsPage() {
@@ -732,11 +738,17 @@ export default function InteractionsPage() {
                       <div className="flex-1 space-y-1">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {getTypeBadge(interaction.type)}
                               <span className="font-medium text-foreground">
                                 {interaction.subject}
                               </span>
+                              {interaction.product?.name && (
+                                <>
+                                  <span className="text-muted-foreground">•</span>
+                                  <Badge variant="outline">{interaction.product.name}</Badge>
+                                </>
+                              )}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
@@ -794,11 +806,17 @@ export default function InteractionsPage() {
                       <div className="flex-1 space-y-1">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {getTypeBadge(interaction.type)}
                               <span className="font-medium text-foreground">
                                 {interaction.subject}
                               </span>
+                              {interaction.product?.name && (
+                                <>
+                                  <span className="text-muted-foreground">•</span>
+                                  <Badge variant="outline">{interaction.product.name}</Badge>
+                                </>
+                              )}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
@@ -850,9 +868,12 @@ export default function InteractionsPage() {
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between">
-                            <div className="font-medium text-foreground flex items-center gap-2">
+                            <div className="font-medium text-foreground flex items-center gap-2 flex-wrap">
                               {getTypeBadge(interaction.type)}
                               {interaction.subject}
+                              {interaction.product?.name && (
+                                <Badge variant="outline">{interaction.product.name}</Badge>
+                              )}
                             </div>
                             {getStatusBadge(interaction.status)}
                           </div>
@@ -891,8 +912,11 @@ export default function InteractionsPage() {
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-foreground">
+                            <span className="font-medium text-foreground flex items-center gap-2 flex-wrap">
                               {interaction.subject}
+                              {interaction.product?.name && (
+                                <Badge variant="outline">{interaction.product.name}</Badge>
+                              )}
                             </span>
                             {getStatusBadge(interaction.status)}
                           </div>
@@ -932,8 +956,11 @@ export default function InteractionsPage() {
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-foreground">
+                            <span className="font-medium text-foreground flex items-center gap-2 flex-wrap">
                               {interaction.subject}
+                              {interaction.product?.name && (
+                                <Badge variant="outline">{interaction.product.name}</Badge>
+                              )}
                             </span>
                             {getStatusBadge(interaction.status)}
                           </div>

@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 // import { PrismaAdapter } from "next-auth/prisma-adapter";
 import {PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "../../../../lib/prisma"; // ton fichier singleton Prisma
+import { prisma } from "../../../../lib/prisma"; 
 import bcrypt from "bcryptjs";
 
 declare module "next-auth" {

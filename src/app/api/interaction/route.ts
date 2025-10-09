@@ -15,8 +15,9 @@ export async function POST(req: Request) {
         duration: data.duration,
         status: data.status || "completed",
         contactId: data.contactId,
+        productId: data.productId ?? null,
       },
-      include: { contact: true },
+      include: { contact: true, product: true },
     });
 
     return NextResponse.json(interaction);
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const interactions = await prisma.interaction.findMany({
-      include: { contact: true },
+      include: { contact: true, product: true },
       orderBy: { date: "desc" },
     });
     return NextResponse.json(interactions);

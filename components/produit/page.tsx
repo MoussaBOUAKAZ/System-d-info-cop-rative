@@ -56,7 +56,7 @@ type Product = {
   status: "ACTIVE" | "INACTIVE";
   stock?: number;
   description: string;
-  clients: number;
+  clientsCount?: number; // nombre de contacts liés (via relation)
 };
 
 export default function ProductsPage() {
@@ -64,6 +64,8 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "PRODUCT" | "SERVICE">("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
   // Ajoute les états pour le formulaire
   const [form, setForm] = useState({
@@ -74,7 +76,16 @@ export default function ProductsPage() {
     stock: "",
     description: "",
     status: true,
-    clients: "",
+  });
+
+  const [editForm, setEditForm] = useState({
+    name: "",
+    type: "" as "PRODUCT" | "SERVICE" | "",
+    category: "",
+    price: "",
+    stock: "",
+    description: "",
+    status: true,
   });
 
   useEffect(() => {
@@ -98,25 +109,60 @@ export default function ProductsPage() {
     totalProducts: products.filter((p) => p.type === "PRODUCT").length,
     totalServices: products.filter((p) => p.type === "SERVICE").length,
     activeItems: products.filter((p) => p.status === "ACTIVE").length,
-    totalRevenue: products.reduce((sum, p) => sum + p.price * p.clients, 0),
+    totalRevenue: products.reduce((sum, p) => sum + p.price * (p.clientsCount || 0), 0),
+  };
+
+  const openEdit = (product: Product) => {
+    setEditingProductId(product.id);
+    setEditForm({
+      name: product.name,
+      type: product.type,
+      category: product.category,
+      price: String(product.price ?? ""),
+      stock: product.stock != null ? String(product.stock) : "",
+      description: product.description ?? "",
+      status: product.status === "ACTIVE",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!editingProductId) return;
+    const payload = {
+      name: editForm.name,
+      type: editForm.type as "PRODUCT" | "SERVICE",
+      category: editForm.category,
+      price: Number(editForm.price),
+      status: editForm.status ? "ACTIVE" : "INACTIVE",
+      stock: editForm.type === "PRODUCT" ? (editForm.stock !== "" ? Number(editForm.stock) : null) : null,
+      description: editForm.description,
+    };
+    const res = await fetch(`/api/products/${editingProductId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return;
+    const updated = await res.json();
+    setProducts((prev) => prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)));
+    setIsEditDialogOpen(false);
+    setEditingProductId(null);
   };
 
   const handleAddProduct = async () => {
-    const newProduct: Product = {
-      id: Math.random().toString(36).slice(2),
+    const payload = {
       name: form.name,
-      type: form.type as "PRODUCT" | "SERVICE", // <-- majuscules
+      type: form.type as "PRODUCT" | "SERVICE",
       category: form.category,
       price: Number(form.price),
       status: form.status ? "ACTIVE" : "INACTIVE",
       stock: form.type === "PRODUCT" ? Number(form.stock) : undefined,
       description: form.description,
-      clients: Number(form.clients) || 0,
     };
     const response = await fetch("/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newProduct),
+      body: JSON.stringify(payload),
     });
     const data = await response.json();
     setProducts((prev) => [...prev, data]);
@@ -129,7 +175,6 @@ export default function ProductsPage() {
       stock: "",
       description: "",
       status: true,
-      clients: "",
     });
   };
 
@@ -208,10 +253,7 @@ export default function ProductsPage() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Décrivez le produit ou service..." rows={3} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="clients">Clients</Label>
-                <Input id="clients" type="number" value={form.clients} onChange={e => setForm(f => ({ ...f, clients: e.target.value }))} placeholder="0" />
-              </div>
+              {/* clients supprimé: relation Contact[] désormais */}
               <div className="flex items-center justify-between rounded-lg border border-border p-4">
                 <div className="space-y-0.5">
                   <Label>Statut</Label>
@@ -286,6 +328,69 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifier le produit/service</DialogTitle>
+            <DialogDescription>
+              Mettez à jour les informations du produit/service
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nom</Label>
+                <Input id="edit-name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">Type</Label>
+                <Select value={editForm.type} onValueChange={v => setEditForm(f => ({ ...f, type: v as "PRODUCT" | "SERVICE" }))}>
+                  <SelectTrigger id="edit-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PRODUCT">Produit</SelectItem>
+                    <SelectItem value="SERVICE">Service</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">Catégorie</Label>
+                <Input id="edit-category" value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">Prix (€)</Label>
+                <Input id="edit-price" type="number" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))} />
+              </div>
+            </div>
+            {editForm.type === "PRODUCT" && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-stock">Stock</Label>
+                <Input id="edit-stock" type="number" value={editForm.stock} onChange={e => setEditForm(f => ({ ...f, stock: e.target.value }))} />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea id="edit-description" value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div className="space-y-0.5">
+                <Label>Statut</Label>
+                <p className="text-sm text-muted-foreground">Activer ce produit/service</p>
+              </div>
+              <Switch checked={editForm.status} onCheckedChange={v => setEditForm(f => ({ ...f, status: v }))} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Annuler</Button>
+            <Button onClick={handleUpdateProduct}>Enregistrer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -371,7 +476,7 @@ export default function ProductsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {product.clients}
+                    {product.clientsCount ?? 0}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -383,9 +488,21 @@ export default function ProductsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      Modifier
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(product)}>
+                        Modifier
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                          await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
+                          setProducts((prev) => prev.filter((p) => p.id !== product.id))
+                        }}
+                      >
+                        Supprimer
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

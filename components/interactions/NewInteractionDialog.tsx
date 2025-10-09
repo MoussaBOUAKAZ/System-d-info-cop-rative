@@ -28,6 +28,11 @@ interface Contact {
   company?: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+}
+
 interface Interaction {
   id: number;
   type: string;
@@ -37,6 +42,7 @@ interface Interaction {
   date: string;
   duration?: string;
   status: string;
+  product?: Product;
 }
 
 interface NewInteractionDialogProps {
@@ -58,6 +64,8 @@ export function NewInteractionDialog({
   const [duration, setDuration] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productId, setProductId] = useState<string>("");
 
   // 🧠 Charger les contacts
   useEffect(() => {
@@ -65,6 +73,14 @@ export function NewInteractionDialog({
       .then((res) => res.json())
       .then((data: Contact[]) => setContacts(data))
       .catch((err) => console.error("Erreur chargement contacts :", err));
+  }, []);
+
+  // 🧠 Charger les produits (optionnel)
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data: Product[]) => setProducts(data))
+      .catch((err) => console.error("Erreur chargement produits :", err));
   }, []);
 
   // 💾 Enregistrement
@@ -88,6 +104,7 @@ export function NewInteractionDialog({
           date: parsedDate.toISOString(),
           duration,
           status: interactionStatus,
+          productId: productId === "none" || productId === "" ? null : productId,
         }),
       });
 
@@ -106,6 +123,7 @@ export function NewInteractionDialog({
       setDate("");
       setDuration("");
       setNotes("");
+      setProductId("");
 
       onClose();
     } catch (err) {
@@ -156,6 +174,30 @@ export function NewInteractionDialog({
                 ) : (
                   <SelectItem value="none" disabled>
                     Aucun contact trouvé
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Produit (optionnel) */}
+          <div className="grid gap-2">
+            <Label htmlFor="product">Produit (optionnel)</Label>
+            <Select value={productId} onValueChange={(v) => setProductId(v === "none" ? "" : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Associer à un produit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Aucun</SelectItem>
+                {products.length > 0 ? (
+                  products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>
+                    Aucun produit trouvé
                   </SelectItem>
                 )}
               </SelectContent>

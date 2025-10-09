@@ -112,6 +112,7 @@ model Contact {
   postalCode String?
   Statut     String?
   interactions Interaction[]
+  products     Product[]   // relation many-to-many avec Product
 }
 
 model Product {
@@ -123,7 +124,7 @@ model Product {
   status      ProductStatus @default(ACTIVE)
   stock       Int?
   description String
-  clients     Int        // nombre de clients ayant acheté ce produit/service à suprimer
+  clients     Contact[]   // relation many-to-many vers Contact
 
   // Relation : un produit peut être lié à plusieurs interactions (ex: ventes, support, etc.)
   interactions Interaction[] 
