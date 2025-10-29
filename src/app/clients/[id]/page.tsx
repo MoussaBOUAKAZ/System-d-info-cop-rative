@@ -28,6 +28,18 @@ export default function ClientDetailPage() {
   const router = useRouter();
   const [contact, setContact] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  const handleSendEmail = () => {
+    const subject = encodeURIComponent("Bonjour " + contact.fullName);
+    const body = encodeURIComponent("Bonjour " + contact.fullName  + ",\n\n");
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contact.email}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, "_blank");
+  };
+  // Add this function at the top of your component
+const handleCall = () => {
+  if (!contact?.phone) return;
+  const telUrl = `tel:${contact.phone}`;
+  window.open(telUrl, "_self"); // "_self" opens in the same tab / triggers phone dialer
+};
 
   useEffect(() => {
     const fetchContact = async () => {
@@ -138,7 +150,7 @@ export default function ClientDetailPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <div >
                     <p className="text-sm text-muted-foreground">Email</p>
                     <p className="font-medium">{contact?.email}</p>
                   </div>
@@ -206,9 +218,7 @@ export default function ClientDetailPage() {
             </Card>
           </div>
 
-          {/* Right Column - Commercial Info */}
           <div className="space-y-6">
-            {/* Informations commerciales */}
             <Card>
               <CardHeader>
                 <CardTitle>Informations commerciales</CardTitle>
@@ -246,17 +256,16 @@ export default function ClientDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Actions rapides */}
             <Card>
               <CardHeader>
                 <CardTitle>Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full bg-transparent" variant="outline">
+                <Button className="w-full bg-transparent" variant="outline" onClick={handleSendEmail}>
                   <Mail className="h-4 w-4 mr-2" />
                   Envoyer un email
                 </Button>
-                <Button className="w-full bg-transparent" variant="outline">
+                <Button className="w-full bg-transparent" variant="outline" onClick={handleCall}>
                   <Phone className="h-4 w-4 mr-2" />
                   Appeler
                 </Button>
