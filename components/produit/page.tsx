@@ -50,13 +50,13 @@ import {
 type Product = {
   id: string;
   name: string;
-  type: "PRODUCT" | "SERVICE"; // <-- majuscules comme dans Prisma
+  type: "PRODUCT" | "SERVICE"; 
   category: string;
   price: number;
   status: "ACTIVE" | "INACTIVE";
   stock?: number;
   description: string;
-  clientsCount?: number; // nombre de contacts liés (via relation)
+  clientsCount?: number; 
 };
 
 export default function ProductsPage() {
