@@ -183,11 +183,6 @@ erDiagram
 
 ---
 
-## 6. Future Roadmap
-
-*   [ ] **Outlook/Gmail Integration**: Two-way sync for emails.
-*   [ ] **Invoice Generation**: PDF generation from verified sales.
-*   [ ] **Role Granularity**: Custom permission sets (e.g., "View Only" users).
 
 
 
