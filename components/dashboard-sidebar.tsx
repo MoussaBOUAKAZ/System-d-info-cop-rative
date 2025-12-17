@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { LayoutDashboard, Users, Package, TrendingUp, Calendar, FileText, Settings, ChevronLeft,MessageSquare,Activity } from "lucide-react"
+import { LayoutDashboard, Users, Package, TrendingUp, Calendar, FileText, Settings, ChevronLeft, MessageSquare, Activity, Bot } from "lucide-react"
 import { cn } from "../lib/utils"
 import { Button } from "../components/ui/button"
 
@@ -11,8 +11,9 @@ const navigation = [
   { name: "Produits & Services", icon: Package, current: false },
   { name: "Calendrier", icon: Calendar, current: false },
   { name: "Rapportes", icon: FileText, current: false },
-  {name: "Discussion", icon: MessageSquare, current: false},
-  {name: "interaction", icon: Activity, current: false},
+  { name: "Discussion", icon: MessageSquare, current: false },
+  { name: "interaction", icon: Activity, current: false },
+  { name: "Chat IA Assistant", icon: Bot, current: false },
   { name: "Paramètres", icon: Settings, current: false },
 ]
 
@@ -20,8 +21,11 @@ type DashboardSidebarProps = {
   onButtonClick: (value: string) => void;
 };
 
+import { useChatStore } from "../src/hooks/use-chat-store";
+
 export function DashboardSidebar({ onButtonClick }: DashboardSidebarProps) {
-    const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+  const { open: openChat } = useChatStore();
 
   return (
     <aside className={cn("border-r bg-sidebar transition-all duration-300", collapsed ? "w-16" : "w-64")}>
@@ -50,12 +54,17 @@ export function DashboardSidebar({ onButtonClick }: DashboardSidebarProps) {
             key={item.name}
             variant={item.current ? "secondary" : "ghost"}
             className={cn("w-full justify-start gap-3", collapsed && "justify-center px-2")}
-            onClick={() => {item.current = true;
+            onClick={() => {
+              item.current = true;
               navigation.forEach(navItem => {
                 if (navItem !== item) navItem.current = false;
               });
-              onButtonClick(item.name)}
-             }
+              if (item.name === "Chat IA Assistant") {
+                openChat();
+              }
+              onButtonClick(item.name)
+            }
+            }
           >
             <item.icon className="h-5 w-5 shrink-0" />
             {!collapsed && <span>{item.name}</span>}

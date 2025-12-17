@@ -5,13 +5,15 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import { Toaster } from "../../components/ui/toaster";
-import SessionWatcher from "./components/SessionWatcher"; 
+import SessionWatcher from "./components/SessionWatcher";
 
 export const metadata: Metadata = {
   title: "My CRM",
   description: "Bouakaz",
   generator: "Next.js",
 };
+
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 export default function RootLayout({
   children,
@@ -24,6 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <SessionWatcher>
             {children}
+            <ChatWidget />
             <Toaster />
           </SessionWatcher>
         </AuthProvider>

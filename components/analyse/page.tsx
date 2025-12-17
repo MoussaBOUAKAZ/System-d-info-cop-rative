@@ -23,47 +23,47 @@ import {
 } from "recharts"
 import { TrendingUp, TrendingDown, Users, DollarSign, Target, Activity } from "lucide-react"
 
-// Données de démonstration
-const revenueData = [
-  { month: "Jan", revenue: 45000, target: 50000 },
-  { month: "Fév", revenue: 52000, target: 50000 },
-  { month: "Mar", revenue: 48000, target: 50000 },
-  { month: "Avr", revenue: 61000, target: 55000 },
-  { month: "Mai", revenue: 58000, target: 55000 },
-  { month: "Juin", revenue: 67000, target: 60000 },
-]
-
-const contactsGrowthData = [
-  { month: "Jan", contacts: 850 },
-  { month: "Fév", contacts: 920 },
-  { month: "Mar", contacts: 1050 },
-  { month: "Avr", contacts: 1180 },
-  { month: "Mai", revenue: 1240 },
-  { month: "Juin", contacts: 1284 },
-]
-
-const interactionsByTypeData = [
-  { name: "Emails", value: 198, color: "hsl(var(--chart-1))" },
-  { name: "Appels", value: 89, color: "hsl(var(--chart-2))" },
-  { name: "Réunions", value: 55, color: "hsl(var(--chart-3))" },
-]
-
-const conversionData = [
-  { stage: "Prospects", count: 234 },
-  { stage: "Qualifiés", count: 156 },
-  { stage: "Propositions", count: 89 },
-  { stage: "Négociations", count: 45 },
-  { stage: "Clients", count: 28 },
-]
-
-const topPerformers = [
-  { name: "Marie Dubois", deals: 12, revenue: "245K €", conversion: 68 },
-  { name: "Pierre Martin", deals: 10, revenue: "198K €", conversion: 62 },
-  { name: "Sophie Laurent", deals: 8, revenue: "156K €", conversion: 58 },
-  { name: "Thomas Bernard", deals: 7, revenue: "134K €", conversion: 54 },
-]
+import { useEffect, useState } from "react"
 
 export default function Rapports() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/analytics');
+        const json = await res.json();
+        setData(json);
+      } catch (error) {
+        console.error("Failed to fetch analytics", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center">Chargement des analyses...</div>;
+  }
+
+  if (!data || !data.kpi) {
+    return (
+      <div className="p-8 text-center flex flex-col items-center justify-center h-[50vh]">
+        <h3 className="text-lg font-semibold text-destructive mb-2">Impossible de charger les données</h3>
+        {data?.error && <p className="text-muted-foreground mb-4">Erreur: {data.error}</p>}
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
+  const { revenueData, contactsGrowthData, interactionsByTypeData, conversionData, topPerformers, kpi } = data;
   return (
     <>
       <Header title="Analytics" description="Vue d'ensemble des performances et statistiques" />
@@ -77,10 +77,10 @@ export default function Rapports() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">2.4M €</div>
+              <div className="text-2xl font-bold text-foreground">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(kpi.totalRevenue)}</div>
               <div className="flex items-center gap-1 text-xs text-chart-1 mt-1">
                 <TrendingUp className="h-3 w-3" />
-                <span>+18.2% vs mois dernier</span>
+                <span>Global</span>
               </div>
             </CardContent>
           </Card>
@@ -91,39 +91,31 @@ export default function Rapports() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">12.8%</div>
-              <div className="flex items-center gap-1 text-xs text-chart-1 mt-1">
+              <div className="text-2xl font-bold text-foreground">{kpi.conversionRate}%</div>
+              {/* <div className="flex items-center gap-1 text-xs text-chart-1 mt-1">
                 <TrendingUp className="h-3 w-3" />
                 <span>+2.4% vs mois dernier</span>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Nouveaux Clients</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Nouveaux Clients (Mois)</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">28</div>
-              <div className="flex items-center gap-1 text-xs text-destructive mt-1">
-                <TrendingDown className="h-3 w-3" />
-                <span>-5.2% vs mois dernier</span>
-              </div>
+              <div className="text-2xl font-bold text-foreground">{kpi.newClients}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Interactions</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Interactions (6 mois)</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">342</div>
-              <div className="flex items-center gap-1 text-xs text-chart-1 mt-1">
-                <TrendingUp className="h-3 w-3" />
-                <span>+15.3% vs mois dernier</span>
-              </div>
+              <div className="text-2xl font-bold text-foreground">{kpi.totalInteractions}</div>
             </CardContent>
           </Card>
         </div>
@@ -187,7 +179,7 @@ export default function Rapports() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {topPerformers.map((performer, index) => (
+                    {topPerformers.map((performer: any, index: number) => (
                       <div key={performer.name} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -263,7 +255,7 @@ export default function Rapports() {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {interactionsByTypeData.map((entry, index) => (
+                        {interactionsByTypeData.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -277,7 +269,7 @@ export default function Rapports() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="mt-4 space-y-2">
-                    {interactionsByTypeData.map((item) => (
+                    {interactionsByTypeData.map((item: any) => (
                       <div key={item.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
@@ -334,7 +326,7 @@ export default function Rapports() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {conversionData.map((stage, index) => {
+                  {conversionData.map((stage: any, index: number) => {
                     const percentage = index === 0 ? 100 : (stage.count / conversionData[0].count) * 100
                     return (
                       <div key={stage.stage} className="space-y-2">

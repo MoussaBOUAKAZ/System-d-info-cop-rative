@@ -31,6 +31,7 @@ model User {
   messages      Message[]
 
   events    Event[]  @relation("EventParticipants")
+  aiSessions AIChatSession[]
 }
 model Session {
   id           String   @id @default(cuid())
@@ -173,4 +174,25 @@ model Event {
   location     String?
   description  String?
   participants User[]   @relation("EventParticipants")
+}
+
+// AI Chatbot Models
+model AIChatSession {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AIChatMessage[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  title     String?
+  mode      String          @default("general") // faq, tutor, support
+}
+
+model AIChatMessage {
+  id        String        @id @default(cuid())
+  sessionId String
+  session   AIChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String        // "user" or "assistant"
+  content   String        @db.Text
+  createdAt DateTime      @default(now())
 }
