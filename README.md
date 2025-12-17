@@ -188,3 +188,8 @@ erDiagram
 *   [ ] **Outlook/Gmail Integration**: Two-way sync for emails.
 *   [ ] **Invoice Generation**: PDF generation from verified sales.
 *   [ ] **Role Granularity**: Custom permission sets (e.g., "View Only" users).
+
+
+
+# Future works
+i wanted to add BPM workflow with n8n and local llm , for process automisation like , user questions , fully automatic workflow for sending masseges to organise reunion 
